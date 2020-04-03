@@ -72,14 +72,41 @@ function populateShows(shows) {
       `<div class="col-md-6 col-lg-3 Show" data-show-id="${show.id}">
          <div class="card" data-show-id="${show.id}">
            <div class="card-body">
-           <img class="card-img-top" src="${show.image}">
+             <img class="card-img-top" src="${show.image}">
              <h5 class="card-title">${show.name}</h5>
              <p class="card-text">${show.summary}</p>
+             <button class="btn btn-primary episodes" data-show-id="${show.id}">Episodes</button>
+             <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary " data-toggle="modal" data-target="#exampleModalLong">
+  Launch demo modal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
            </div>
          </div>
        </div>
       `
     );
+    // btnListener();
 
     $showsList.append($item);
   }
@@ -96,7 +123,7 @@ $("#search-form").on("submit", async function handleSearch(evt) {
   let query = $("#search-query").val();
   if (!query) return;
 
-  $("#episodes-area").hide();
+  // $("#episodes-area").hide();
 
   let shows = await searchShows(query);
 
@@ -108,8 +135,27 @@ $("#search-form").on("submit", async function handleSearch(evt) {
  */
 
 async function getEpisodes(id) {
-  // TODO: get episodes from tvmaze
-  //       you can get this by making GET request to
-  //       http://api.tvmaze.com/shows/SHOW-ID-HERE/episodes
-  // TODO: return array-of-episode-info, as described in docstring above
+  const url = `http://api.tvmaze.com/shows/${id}/episodes`;
+  const res = await axios.get(url);
+  populateEpisodes(res.data);
 }
+//make a list of episodes
+function populateEpisodes(arr) {
+  console.log(arr);
+  arr.forEach(function(episode) {
+    const airdate = episode.airdate;
+    const title = episode.name;
+    const season = episode.season;
+    const number = episode.number;
+    const episodeInfo = `On ${airdate}: ${title} aired. S${season}E${number}`;
+    console.log(episodeInfo);
+    const $epUl = $("#episodes-list");
+    const $epLi = $("<li>").text(episodeInfo);
+    $epUl.append($epLi);
+  });
+}
+
+$(document).on("click", ".episodes", function(e) {
+  console.log(e.target.dataset.showId);
+  getEpisodes(e.target.dataset.showId);
+});
